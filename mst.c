@@ -52,22 +52,9 @@ graph_vertex *graph_add_vertex (graph * self)
   vertex->neighbors = calloc (2, sizeof (graph_vertex));
   vertex->weights = calloc (2, sizeof (int));
 
-  if (self->size != 0)
-    {
-      // Comme on alloue une taille spécifique pour le nombre de sommets, 
-      // Il faut vérifier qu'on soit pas au maximum
-      // Si c'est le cas, on augmente la taille du tableau
-      if (self->vertices[self->size - 1] != NULL)
-        {
-          graph_vertex **new =
-            calloc (self->size * 2, sizeof (graph_vertex *));
-          memcpy (new, self->vertices, self->size * sizeof (graph_vertex *));
-          free (self->vertices);
-          self->vertices = new;
-        }
-    }
-  self->vertices[self->size] = vertex;
-  ++self->size;
+  self->vertices =
+    realloc (self->vertices, ++self->size * sizeof (graph_vertex *));
+  self->vertices[self->size - 1] = vertex;
 
   return vertex;
 }
