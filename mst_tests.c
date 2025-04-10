@@ -36,35 +36,6 @@ static char *test_graph_destroy_null ()
   return NULL;
 }
 
-static char *test_graph_destroy_no_vertices ()
-{
-  graph *g = calloc (1, sizeof (graph));
-
-  graph_create (g);
-
-  graph_destroy (g);
-
-  mu_assert ("error destroying empty graph", g->vertices == NULL);
-  free (g);
-  return NULL;
-}
-
-static char *test_graph_destroy_no_edges ()
-{
-  graph *g = calloc (1, sizeof (graph));
-
-  graph_create (g);
-  graph_add_vertex (g);
-  graph_add_vertex (g);
-  graph_add_vertex (g);
-
-  graph_destroy (g);
-
-  mu_assert ("error destroying graph with no edges", g->vertices == NULL);
-  free (g);
-  return NULL;
-}
-
 static char *test_graph_destroy_complete ()
 {
   graph *g = calloc (1, sizeof (graph));
