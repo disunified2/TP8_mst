@@ -338,6 +338,259 @@ static char *test_queue_extract_min_multiple ()
   return NULL;
 }
 
+static char *test_queue_decrease_key_null ()
+{
+  queue *q = NULL;
+
+  queue_decrease_key (q, 1, 10);
+
+  mu_assert ("error decreasing key on null queue", q == NULL);
+  return NULL;
+}
+
+static char *test_queue_decrease_key_invalid_ind ()
+{
+  queue *q = calloc (1, sizeof (queue));
+  graph *g = calloc (1, sizeof (graph));
+
+  queue_create (q);
+  graph_create (g);
+
+  queue_insert (q, graph_add_vertex (g), 3);
+
+  queue_decrease_key (q, 2, 2);
+
+  mu_assert ("error decreasing key with invalid indice",
+             q->priorities[0] == 3);
+  mu_assert ("error with size on invalid indice", queue_size (q) == 1);
+
+  queue_destroy (q);
+  graph_destroy (g);
+  free (q);
+  free (g);
+  return NULL;
+}
+
+static char *test_queue_decrease_key_invalid_key ()
+{
+  queue *q = calloc (1, sizeof (queue));
+  graph *g = calloc (1, sizeof (graph));
+
+  queue_create (q);
+  graph_create (g);
+
+  queue_insert (q, graph_add_vertex (g), 3);
+
+  queue_decrease_key (q, 0, 5);
+
+  mu_assert ("error decreasing key with invalid indice",
+             q->priorities[0] == 3);
+  mu_assert ("error with size on invalid indice", queue_size (q) == 1);
+
+  queue_destroy (q);
+  graph_destroy (g);
+  free (q);
+  free (g);
+  return NULL;
+}
+
+static char *test_queue_decrease_key_single ()
+{
+  queue *q = calloc (1, sizeof (queue));
+  graph *g = calloc (1, sizeof (graph));
+
+  queue_create (q);
+  graph_create (g);
+
+  queue_insert (q, graph_add_vertex (g), 3);
+
+  queue_decrease_key (q, 0, 2);
+
+  mu_assert ("error decreasing key with invalid indice",
+             q->priorities[0] == 2);
+  mu_assert ("error with size on invalid indice", queue_size (q) == 1);
+
+  queue_destroy (q);
+  graph_destroy (g);
+  free (q);
+  free (g);
+  return NULL;
+}
+
+static char *test_queue_decrease_key_no_change ()
+{
+  queue *q = calloc (1, sizeof (queue));
+  graph *g = calloc (1, sizeof (graph));
+
+  queue_create (q);
+  graph_create (g);
+
+  queue_insert (q, graph_add_vertex (g), 3);
+  queue_insert (q, graph_add_vertex (g), 4);
+  queue_insert (q, graph_add_vertex (g), 5);
+
+  queue_decrease_key (q, 0, 2);
+
+  mu_assert ("error decreasing key with invalid indice",
+             q->priorities[0] == 2);
+  mu_assert ("error with size on invalid indice", queue_size (q) == 3);
+
+  queue_destroy (q);
+  graph_destroy (g);
+  free (q);
+  free (g);
+  return NULL;
+}
+
+static char *test_queue_decrease_key_heapsort ()
+{
+  queue *q = calloc (1, sizeof (queue));
+  graph *g = calloc (1, sizeof (graph));
+  queue *expected = calloc (1, sizeof (queue));
+
+  queue_create (q);
+  graph_create (g);
+  queue_create (expected);
+
+  graph_vertex *v1 = graph_add_vertex (g);
+  graph_vertex *v2 = graph_add_vertex (g);
+  graph_vertex *v3 = graph_add_vertex (g);
+
+  queue_insert (q, v1, 3);
+  queue_insert (q, v2, 4);
+  queue_insert (q, v3, 5);
+
+  queue_insert (expected, v3, 2);
+  queue_insert (expected, v2, 4);
+  queue_insert (expected, v1, 3);
+
+  queue_decrease_key (q, 2, 2);
+
+  for (size_t i = 0; i < q->size; ++i)
+    {
+      mu_assert ("error decreasing positioning decreased key",
+                 q->vertices[i] == expected->vertices[i]);
+      mu_assert ("error on size of queue",
+                 queue_size (q) == queue_size (expected));
+    }
+
+  queue_destroy (q);
+  graph_destroy (g);
+  queue_destroy (expected);
+  free (q);
+  free (g);
+  free (expected);
+  return NULL;
+}
+
+static char *test_queue_insert_null_queue ()
+{
+  queue *q = NULL;
+  graph *g = calloc (1, sizeof (graph));
+
+  graph_create (g);
+
+  queue_insert (q, graph_add_vertex (g), 1);
+
+  mu_assert ("error inserting in null queue", queue_size (q) == 0);
+  graph_destroy (g);
+  free (g);
+  return NULL;
+}
+
+static char *test_queue_insert_null_vertex ()
+{
+  queue *q = calloc (1, sizeof (queue));
+
+  queue_create (q);
+
+  queue_insert (q, NULL, 1);
+
+  mu_assert ("error adding null vertex to queue", queue_size (q) == 0);
+  queue_destroy (q);
+  free (q);
+  return NULL;
+}
+
+static char *test_queue_insert_single ()
+{
+  queue *q = calloc (1, sizeof (queue));
+  graph *g = calloc (1, sizeof (graph));
+
+  queue_create (q);
+  graph_create (g);
+
+  graph_vertex *v1 = graph_add_vertex (g);
+
+  queue_insert (q, v1, 1);
+
+  mu_assert ("error with size on insertion", queue_size (q) == 1);
+  mu_assert ("error with vertex on insertion", q->vertices[0] == v1);
+  mu_assert ("error with priorities on insertion", q->priorities[0] == 1);
+
+  queue_destroy (q);
+  graph_destroy (g);
+  free (q);
+  free (g);
+  return NULL;
+}
+
+static char *test_queue_insert_ordered ()
+{
+  queue *q = calloc (1, sizeof (queue));
+  graph *g = calloc (1, sizeof (graph));
+
+  queue_create (q);
+  graph_create (g);
+
+  graph_vertex *v1 = graph_add_vertex (g);
+  graph_vertex *v2 = graph_add_vertex (g);
+  graph_vertex *v3 = graph_add_vertex (g);
+
+  queue_insert (q, v1, 2);
+  queue_insert (q, v2, 3);
+  queue_insert (q, v3, 4);
+
+  mu_assert ("error in order when inserting",
+             (q->vertices[0] == v1 && q->vertices[1] == v2)
+             && q->vertices[2] == v3);
+  mu_assert ("error with size", queue_size (q) == 3);
+
+  queue_destroy (q);
+  graph_destroy (g);
+  free (q);
+  free (g);
+  return NULL;
+}
+
+static char *test_queue_insert_heapsort_needed ()
+{
+  queue *q = calloc (1, sizeof (queue));
+  graph *g = calloc (1, sizeof (graph));
+
+  queue_create (q);
+  graph_create (g);
+
+  graph_vertex *v1 = graph_add_vertex (g);
+  graph_vertex *v2 = graph_add_vertex (g);
+  graph_vertex *v3 = graph_add_vertex (g);
+
+  queue_insert (q, v1, 5);
+  queue_insert (q, v2, 3);
+  queue_insert (q, v3, 4);
+
+  mu_assert ("error in order when inserting",
+             (q->vertices[0] == v2 && q->vertices[1] == v1)
+             && q->vertices[2] == v3);
+  mu_assert ("error with size", queue_size (q) == 3);
+
+  queue_destroy (q);
+  graph_destroy (g);
+  free (q);
+  free (g);
+  return NULL;
+}
+
 char *(*tests_functions[]) () = {
   test_mst_dummy,
   test_graph_destroy_null,
@@ -355,7 +608,18 @@ char *(*tests_functions[]) () = {
   test_queue_extract_min_single,
   test_queue_extract_min_many,
   test_queue_extract_min_many_inverted,
-  test_queue_extract_min_multiple
+  test_queue_extract_min_multiple,
+  test_queue_decrease_key_null,
+  test_queue_decrease_key_invalid_ind,
+  test_queue_decrease_key_invalid_key,
+  test_queue_decrease_key_single,
+  test_queue_decrease_key_no_change,
+  test_queue_decrease_key_heapsort,
+  test_queue_insert_null_queue,
+  test_queue_insert_null_vertex,
+  test_queue_insert_single,
+  test_queue_insert_ordered,
+  test_queue_insert_heapsort_needed
 };
 
 int main (int argc, const char *argv[])
