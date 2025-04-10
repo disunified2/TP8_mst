@@ -197,7 +197,6 @@ graph_vertex *queue_extract_min (queue * self)
   graph_vertex *min = queue_minimum (self);
   self->priorities[0] = self->priorities[self->size - 1];
   self->vertices[0] = self->vertices[self->size - 1];
-  free (self->vertices[self->size - 1]);
   --self->size;
   min_heapify (self, 0);
   return min;
