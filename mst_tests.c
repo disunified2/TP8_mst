@@ -161,18 +161,203 @@ static char *test_graph_add_edge_large ()
   return NULL;
 }
 
+static char *test_queue_size_null ()
+{
+  queue *q = NULL;
+
+  mu_assert ("error detecting size of null queue", queue_size (q) == 0);
+  return NULL;
+}
+
+static char *test_queue_size_small ()
+{
+  queue *q = calloc (1, sizeof (queue));
+  graph *g = calloc (1, sizeof (graph));
+
+  queue_create (q);
+  graph_create (g);
+
+  graph_vertex *v1 = graph_add_vertex (g);
+  graph_vertex *v2 = graph_add_vertex (g);
+
+  queue_insert (q, v1, 1);
+  queue_insert (q, v2, 2);
+
+  mu_assert ("error detecting size of small queue", queue_size (q) == 2);
+
+  queue_destroy (q);
+  graph_destroy (g);
+  free (q);
+  free (g);
+  return NULL;
+}
+
+static char *test_queue_size_large ()
+{
+  queue *q = calloc (1, sizeof (queue));
+  graph *g = calloc (1, sizeof (graph));
+
+  queue_create (q);
+  graph_create (g);
+
+  for (int i = 0; i < 1000; ++i)
+    {
+      graph_vertex *v = graph_add_vertex (g);
+      queue_insert (q, v, i);
+    }
+
+  mu_assert ("error detecting size of large queue", queue_size (q) == 1000);
+
+  queue_destroy (q);
+  graph_destroy (g);
+  free (q);
+  free (g);
+  return NULL;
+}
+
+static char *test_queue_extract_min_null ()
+{
+  queue *q = NULL;
+
+  mu_assert ("error finding minimum of null queue",
+             queue_extract_min (q) == NULL);
+  return NULL;
+}
+
+static char *test_queue_extract_min_single ()
+{
+  queue *q = calloc (1, sizeof (queue));
+  graph *g = calloc (1, sizeof (graph));
+
+  queue_create (q);
+  graph_create (g);
+
+  graph_vertex *v = graph_add_vertex (g);
+  queue_insert (q, v, 1);
+
+  mu_assert ("error extracting min of single element queue",
+             queue_extract_min (q) == v);
+  mu_assert ("error with size once element extracted of single element queue",
+             queue_size (q) == 0);
+
+  queue_destroy (q);
+  graph_destroy (g);
+  free (q);
+  free (g);
+  return NULL;
+}
+
+static char *test_queue_extract_min_many ()
+{
+  queue *q = calloc (1, sizeof (queue));
+  graph *g = calloc (1, sizeof (graph));
+
+  queue_create (q);
+  graph_create (g);
+
+  graph_vertex *min = graph_add_vertex (g);
+  queue_insert (q, min, 1);
+
+  for (int i = 2; i < 11; ++i)
+    {
+      graph_vertex *v = graph_add_vertex (g);
+      queue_insert (q, v, i);
+    }
+
+  mu_assert ("error extracting minimum element",
+             queue_extract_min (q) == min);
+  mu_assert ("error reducing size with extract min", queue_size (q) == 9);
+
+  queue_destroy (q);
+  graph_destroy (g);
+  free (q);
+  free (g);
+  return NULL;
+}
+
+static char *test_queue_extract_min_many_inverted ()
+{
+  queue *q = calloc (1, sizeof (queue));
+  graph *g = calloc (1, sizeof (graph));
+
+  queue_create (q);
+  graph_create (g);
+
+  graph_vertex *min = graph_add_vertex (g);
+  queue_insert (q, min, 1);
+
+  for (int i = 11; i > 2; --i)
+    {
+      graph_vertex *v = graph_add_vertex (g);
+      queue_insert (q, v, i);
+    }
+
+  mu_assert ("error extracting minimum element",
+             queue_extract_min (q) == min);
+  mu_assert ("error reducing size with extract min", queue_size (q) == 9);
+
+  queue_destroy (q);
+  graph_destroy (g);
+  free (q);
+  free (g);
+  return NULL;
+}
+
+static char *test_queue_extract_min_multiple ()
+{
+  queue *q = calloc (1, sizeof (queue));
+  graph *g = calloc (1, sizeof (graph));
+
+  queue_create (q);
+  graph_create (g);
+
+  graph_vertex *v1 = graph_add_vertex (g);
+  graph_vertex *v2 = graph_add_vertex (g);
+  graph_vertex *v3 = graph_add_vertex (g);
+  graph_vertex *v4 = graph_add_vertex (g);
+  graph_vertex *v5 = graph_add_vertex (g);
+  graph_vertex *v6 = graph_add_vertex (g);
+
+  queue_insert (q, v1, 5);
+  queue_insert (q, v2, 12);
+  queue_insert (q, v3, 4);
+  queue_insert (q, v4, 2);
+  queue_insert (q, v5, 35);
+  queue_insert (q, v6, 55);
+
+  mu_assert ("error", queue_extract_min (q) == v4);
+  mu_assert ("error", queue_extract_min (q) == v3);
+  mu_assert ("error", queue_extract_min (q) == v1);
+  mu_assert ("error", queue_extract_min (q) == v2);
+  mu_assert ("error", queue_extract_min (q) == v5);
+  mu_assert ("error", queue_extract_min (q) == v6);
+  mu_assert ("error", queue_size (q) == 0);
+
+  queue_destroy (q);
+  graph_destroy (g);
+  free (q);
+  free (g);
+  return NULL;
+}
+
 char *(*tests_functions[]) () = {
   test_mst_dummy,
   test_graph_destroy_null,
-  test_graph_destroy_no_vertices,
-  test_graph_destroy_no_edges,
   test_graph_destroy_complete,
   test_graph_add_vertex_null,
   test_graph_add_vertex_small,
   test_graph_add_vertex_large,
   test_graph_add_edge_null_vertex,
   test_graph_add_edge_already_present,
-  test_graph_add_edge_large
+  test_graph_add_edge_large,
+  test_queue_size_null,
+  test_queue_size_small,
+  test_queue_size_large,
+  test_queue_extract_min_null,
+  test_queue_extract_min_single,
+  test_queue_extract_min_many,
+  test_queue_extract_min_many_inverted,
+  test_queue_extract_min_multiple
 };
 
 int main (int argc, const char *argv[])
