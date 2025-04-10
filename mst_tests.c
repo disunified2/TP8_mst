@@ -325,12 +325,10 @@ static char *test_queue_extract_min_multiple ()
   queue_insert (q, v5, 35);
   queue_insert (q, v6, 55);
 
-  mu_assert ("error", queue_extract_min (q) == v4);
-  mu_assert ("error", queue_extract_min (q) == v3);
-  mu_assert ("error", queue_extract_min (q) == v1);
-  mu_assert ("error", queue_extract_min (q) == v2);
-  mu_assert ("error", queue_extract_min (q) == v5);
-  mu_assert ("error", queue_extract_min (q) == v6);
+  mu_assert ("error extracting min",
+             (queue_extract_min (q) == v4 && queue_extract_min (q) == v3)
+             && (queue_extract_min (q) == v1 && queue_extract_min (q) == v2)
+             && (queue_extract_min (q) == v5 && queue_extract_min (q) == v6));
   mu_assert ("error", queue_size (q) == 0);
 
   queue_destroy (q);
