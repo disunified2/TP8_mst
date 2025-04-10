@@ -4,6 +4,7 @@
 #include <values.h>
 #include <string.h>
 #include <limits.h>
+#include <stdbool.h>
 
 void graph_create (graph * self)
 {
@@ -257,25 +258,69 @@ void queue_insert (queue * self, graph_vertex * vertex, int key)
   queue_decrease_key (self, self->size - 1, key);
 }
 
+bool queue_contains (queue * self, graph_vertex * v)
+{
+  for (size_t i = 0; i < self->size; ++i)
+    {
+      if (self->vertices[i] == v)
+        {
+          return true;
+        }
+    }
+  return false;
+}
+
 int mst_prim (const graph * self, graph_vertex * source)
 {
-  /*
-     if (self == NULL || source == NULL) {
-     return 0;
-     }
+  if (self == NULL || source == NULL)
+    {
+      return 0;
+    }
 
-     for (size_t i = 0; i < self->size; ++i) {
-     self->vertices[i]->distance = INT_MAX;
-     self->vertices[i]->parent = NULL;
-     }
-     source->degree = 0;
+  for (size_t i = 0; i < self->size; ++i)
+    {
+      self->vertices[i]->distance = INT_MAX;
+      self->vertices[i]->parent = NULL;
+    }
+  source->degree = 0;
 
-     queue *q = calloc(1, sizeof(queue));
-     queue_create(q);
+  queue *q = calloc (1, sizeof (queue));
+  queue_create (q);
 
-     for (size_t i = 0; i < self->size; ++i) {
-     queue_insert(q, self->vertices[i])
-     }
-   */
-  return 0;
+  for (size_t i = 0; i < self->size; ++i)
+    {
+      queue_insert (q, self->vertices[i], self->vertices[i]->distance);
+    }
+
+  if (queue_size (q) == 1)
+    {
+      queue_destroy (q);
+      free (q);
+      return 0;
+    }
+
+  while (queue_size (q) != 0)
+    {
+      graph_vertex *u = queue_extract_min (q);
+      for (size_t i = 0; i < u->degree; ++i)
+        {
+          graph_vertex *v = u->neighbors[i];
+          if (queue_contains (q, v) && u->weights[i] <= v->distance)
+            {
+              v->parent = u;
+              v->distance = u->weights[i];
+              queue_decrease_key (q, i, u->weights[i]);
+            }
+        }
+    }
+
+  int total = 0;
+  for (size_t i = 0; i < self->size; ++i)
+    {
+      total += self->vertices[i]->distance;
+    }
+
+  queue_destroy (q);
+  free (q);
+  return total;
 }
