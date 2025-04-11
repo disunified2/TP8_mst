@@ -1,6 +1,7 @@
 #include "mst.h"
 
 #include <stdlib.h>
+#include <stdio.h>
 #include <values.h>
 #include <string.h>
 #include <limits.h>
@@ -283,6 +284,7 @@ int mst_prim (const graph * self, graph_vertex * source)
       self->vertices[i]->parent = NULL;
     }
   source->degree = 0;
+  source->distance = 0;
 
   queue *q = calloc (1, sizeof (queue));
   queue_create (q);
@@ -301,6 +303,7 @@ int mst_prim (const graph * self, graph_vertex * source)
 
   while (queue_size (q) != 0)
     {
+      printf ("queue size : %lu\n", queue_size (q));
       graph_vertex *u = queue_extract_min (q);
       for (size_t i = 0; i < u->degree; ++i)
         {
