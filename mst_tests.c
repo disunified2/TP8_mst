@@ -161,6 +161,25 @@ static char *test_graph_add_edge_large ()
   return NULL;
 }
 
+static char *test_graph_add_edge_both_sides_correct ()
+{
+  graph *g = calloc (1, sizeof (graph));
+  graph_create (g);
+
+  graph_vertex *v1 = graph_add_vertex (g);
+  graph_vertex *v2 = graph_add_vertex (g);
+
+  graph_add_edge (v1, v2, 0);
+
+  mu_assert ("error, v2 is not a neighbor of v1", v1->neighbors[0] == v2);
+  mu_assert ("error, v1 is not a neighbor of v2", v2->neighbors[0] == v1);
+  mu_assert ("error with degrees", v1->degree == 1 && v2->degree == 1);
+
+  graph_destroy (g);
+  free (g);
+  return NULL;
+}
+
 static char *test_queue_size_null ()
 {
   queue *q = NULL;
@@ -637,12 +656,8 @@ static char *test_mst_prim_single_path ()
   graph_add_edge (source, v1, 1);
   graph_add_edge (v1, v2, 1);
 
-  printf ("Prim : %d\n", mst_prim (g, source));
-  printf ("Source distance : %d\n", source->distance);
-  printf ("V1 distance : %d\n", v1->distance);
-  printf ("V2 distance : %d\n", v2->distance);
-  // mu_assert ("error, single path does not match expected",
-  //            mst_prim (g, source) == 2);
+  mu_assert ("error, single path does not match expected",
+             mst_prim (g, source) == 2);
 
   graph_destroy (g);
   free (g);
@@ -659,6 +674,7 @@ char *(*tests_functions[]) () = {
   test_graph_add_edge_null_vertex,
   test_graph_add_edge_already_present,
   test_graph_add_edge_large,
+  test_graph_add_edge_both_sides_correct,
   test_queue_size_null,
   test_queue_size_small,
   test_queue_size_large,
