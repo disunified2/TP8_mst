@@ -271,6 +271,18 @@ bool queue_contains (queue * self, graph_vertex * v)
   return false;
 }
 
+size_t queue_find_ind (queue * self, graph_vertex * v)
+{
+  for (size_t i = 0; i < self->size; ++i)
+    {
+      if (self->vertices[i] == v)
+        {
+          return i;
+        }
+    }
+  return self->size;
+}
+
 int mst_prim (const graph * self, graph_vertex * source)
 {
   if (self == NULL || source == NULL)
@@ -283,7 +295,6 @@ int mst_prim (const graph * self, graph_vertex * source)
       self->vertices[i]->distance = INT_MAX;
       self->vertices[i]->parent = NULL;
     }
-  source->degree = 0;
   source->distance = 0;
 
   queue *q = calloc (1, sizeof (queue));
@@ -303,7 +314,6 @@ int mst_prim (const graph * self, graph_vertex * source)
 
   while (queue_size (q) != 0)
     {
-      printf ("queue size : %lu\n", queue_size (q));
       graph_vertex *u = queue_extract_min (q);
       for (size_t i = 0; i < u->degree; ++i)
         {
@@ -312,7 +322,8 @@ int mst_prim (const graph * self, graph_vertex * source)
             {
               v->parent = u;
               v->distance = u->weights[i];
-              queue_decrease_key (q, i, u->weights[i]);
+              size_t ind = queue_find_ind (q, v);
+              queue_decrease_key (q, ind, u->weights[i]);
             }
         }
     }
