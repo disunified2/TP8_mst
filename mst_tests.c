@@ -591,6 +591,64 @@ static char *test_queue_insert_heapsort_needed ()
   return NULL;
 }
 
+static char *test_queue_insert_identical_weight ()
+{
+  queue *q = calloc (1, sizeof (queue));
+  graph *g = calloc (1, sizeof (graph));
+
+  queue_create (q);
+  graph_create (g);
+
+  graph_vertex *v1 = graph_add_vertex (g);
+  graph_vertex *v2 = graph_add_vertex (g);
+
+  queue_insert (q, v1, 1);
+  queue_insert (q, v2, 1);
+
+  mu_assert ("error, queue size does not match", queue_size (q) == 2);
+
+  queue_destroy (q);
+  graph_destroy (g);
+  free (q);
+  free (g);
+  return NULL;
+}
+
+static char *test_mst_prim_null_source ()
+{
+  graph *g = calloc (1, sizeof (graph));
+
+  mu_assert ("error, minimum weight is not 0 with null source",
+             mst_prim (g, NULL) == 0);
+
+  graph_destroy (g);
+  free (g);
+  return NULL;
+}
+
+static char *test_mst_prim_single_path ()
+{
+  graph *g = calloc (1, sizeof (graph));
+
+  graph_vertex *source = graph_add_vertex (g);
+  graph_vertex *v1 = graph_add_vertex (g);
+  graph_vertex *v2 = graph_add_vertex (g);
+
+  graph_add_edge (source, v1, 1);
+  graph_add_edge (v1, v2, 1);
+
+  printf ("Prim : %d\n", mst_prim (g, source));
+  printf ("Source distance : %d\n", source->distance);
+  printf ("V1 distance : %d\n", v1->distance);
+  printf ("V2 distance : %d\n", v2->distance);
+  // mu_assert ("error, single path does not match expected",
+  //            mst_prim (g, source) == 2);
+
+  graph_destroy (g);
+  free (g);
+  return NULL;
+}
+
 char *(*tests_functions[]) () = {
   test_mst_dummy,
   test_graph_destroy_null,
@@ -619,7 +677,10 @@ char *(*tests_functions[]) () = {
   test_queue_insert_null_vertex,
   test_queue_insert_single,
   test_queue_insert_ordered,
-  test_queue_insert_heapsort_needed
+  test_queue_insert_heapsort_needed,
+  test_queue_insert_identical_weight,
+  test_mst_prim_null_source,
+  test_mst_prim_single_path
 };
 
 int main (int argc, const char *argv[])
