@@ -217,6 +217,7 @@ void queue_decrease_key (queue * self, size_t i, int key)
     }
 
   self->priorities[i] = key;
+  self->vertices[i]->index = (int) i;
   while (i > 0 && self->priorities[(i - 1) / 2] > self->priorities[i])
     {
       graph_vertex *tmp = self->vertices[(i - 1) / 2];
@@ -226,6 +227,9 @@ void queue_decrease_key (queue * self, size_t i, int key)
       int temp = self->priorities[(i - 1) / 2];
       self->priorities[(i - 1) / 2] = self->priorities[i];
       self->priorities[i] = temp;
+
+      self->vertices[(i - 1) / 2]->index = (int) (i - 1) / 2;
+      self->vertices[i]->index = (int) i;
 
       i = (i - 1) / 2;
     }
@@ -257,30 +261,6 @@ void queue_insert (queue * self, graph_vertex * vertex, int key)
   self->priorities[self->size - 1] = INT_MAX;
   self->vertices[self->size - 1] = vertex;
   queue_decrease_key (self, self->size - 1, key);
-}
-
-bool queue_contains (queue * self, graph_vertex * v)
-{
-  for (size_t i = 0; i < self->size; ++i)
-    {
-      if (self->vertices[i] == v)
-        {
-          return true;
-        }
-    }
-  return false;
-}
-
-size_t queue_find_ind (queue * self, graph_vertex * v)
-{
-  for (size_t i = 0; i < self->size; ++i)
-    {
-      if (self->vertices[i] == v)
-        {
-          return i;
-        }
-    }
-  return self->size;
 }
 
 int mst_prim (const graph * self, graph_vertex * source)
@@ -318,12 +298,11 @@ int mst_prim (const graph * self, graph_vertex * source)
       for (size_t i = 0; i < u->degree; ++i)
         {
           graph_vertex *v = u->neighbors[i];
-          if (queue_contains (q, v) && u->weights[i] <= v->distance)
+          if (q->vertices[v->index] == v && u->weights[i] <= v->distance)
             {
               v->parent = u;
               v->distance = u->weights[i];
-              size_t ind = queue_find_ind (q, v);
-              queue_decrease_key (q, ind, u->weights[i]);
+              queue_decrease_key (q, v->index, u->weights[i]);
             }
         }
     }
