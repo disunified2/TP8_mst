@@ -285,13 +285,6 @@ int mst_prim (const graph * self, graph_vertex * source)
       queue_insert (q, self->vertices[i], self->vertices[i]->distance);
     }
 
-  if (queue_size (q) == 1)
-    {
-      queue_destroy (q);
-      free (q);
-      return 0;
-    }
-
   while (queue_size (q) != 0)
     {
       graph_vertex *u = queue_extract_min (q);
